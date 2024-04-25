@@ -1,1 +1,161 @@
+mkdir DJANGO_PYSPARK_TEMPLATE
+pip3 install pipenv
+mkdir auth
+cd auth
+pipenv install django==3.2
+pipenv shell
+django-admin startproject PROJECT .
+django-admin startapp my_app
+python manage.py runserver
+python manage.py migrate
+python manage.py createsuperuser
+-------------------------------------------------------------------------------
+add app_name to project folder
+INSTALLED_APPS = [
+'django.contrib.admin',
+'django.contrib.auth',
+'django.contrib.contenttypes',
+'django.contrib.sessions',
+'django.contrib.messages',
+'django.contrib.staticfiles',
+'blog.apps.BlogConfig',
+]
+-----------------------------------------------------------------------------------
+app_url_to project url
+from django.urls import path, include
+from django.contrib import admin
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('blog/', include('blog.urls', namespace='blog')),
+]
+'-------------------------------------------------------------------------------------------
+with static files configuration and media file in project urls.py
+from django.contrib import admin
+from django.urls import path,include
+from django.conf import settings
+from django.conf.urls.static import static
 
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('account.urls', namespace='account')),
+    path('rg', include('rg.urls',namespace='resource_group')),
+    path('tool', include('tool.urls',namespace='tool_form'))
+]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)+static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static_files')
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+python manage.py collectstatic
+------------------------------------------------------------------------------------
+urls.py in app
+touch urls.py
+urls.py
+from django.urls import path
+from . import views
+app_name = 'blog'
+urlpatterns = [
+    # post views
+    path('', views.post_list, name='post_list'),
+    path('<int:year>/<int:month>/<int:day>/<slug:post>/',views.post_detail,name='post_detail'),
+]
+'-------------------------------------------------------------------------------------
+templates setting
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+'-----------------------------------------------------------------------------------------------------------------
+database migration
+python manage.py makemigrations blog
+python manage.py sqlmigrate blog 0001
+python manage.py migrate
+python manage.py createsuperuser
+'-------------------------------------------------------------------------------------------------------------------
+BASIC_FUNCTION
+###############################################################################################################
+from django.shortcuts import render
+from django.http import HttpResponse
+def home(request):
+    return render(request, 'home.html')
+################################################################################################################
+mkdir templates
+touch home.tml
+<body>
+<h1>Welcome to Home Page</h1>
+<h2>This is the full home page</h2>
+{% csrf_token %}
+</body>
+'-----------------------------------------------------------------------------------------------------------------
+forms creation
+touch forms.py
+from django import forms
+class EmailPostForm(forms.Form):
+  name = forms.CharField(max_length=25)
+  email = forms.EmailField()
+  to = forms.EmailField()
+  comments = forms.CharField(required=False,widget=forms.Textarea)
+'-------------------------------------------------------------------------------------------------------------
+model form
+from .models import Comment
+class CommentForm(forms.ModelForm):
+  class Meta:
+    model = Comment
+    fields = ('name', 'email', 'body')
+'---------------------------------------------------------------------------------------------------------------
+Models.py
+from django.db import models
+# Create your models here.
+class Destination(models.Model):
+    name = models.CharField(max_length=100)
+    img = models.ImageField(upload_to='pics')
+    desc = models.TextField()
+    price = models.IntegerField()
+    offer = models.BooleanField(default=False)
+'------------------------------------------------------------------------------------------------------------------
+pipenv --rm
+'---------------------------------------------------------------------------------------------------------------------
+pyspark
+https://pypi.org/project/pyspark/
+pyspark 3.4.1
+pip install pyspark
+https://archive.apache.org/dist/spark/
+wget https://downloads.apache.org/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
+tar xvf spark-3.1.2-bin-hadoop3.2.tgz
+'----------------------------------------------------------------------------------------------------------------------------
+sudo apt install default-jdk
+admin1@admin1-Latitude-3400:~$ source ~/.bashrc
+admin1@admin1-Latitude-3400:~$ nano ~/.bashrc
+export JAVA_HOME=/home/admin1/HADOOP/jdk-21
+export PATH=$PATH:$JAVA_HOME/bin
+
+export HADOOP_HOME=/home/admin1/HADOOP/hadoop-3.2.3           
+export PATH=$PATH:$HADOOP_HOME/bin
+
+export SPARK_HOME=/home/admin1/HADOOP/spark-3.4.1-bin-hadoop3
+export PATH=$PATH:$SPARK_HOME/bin
+sudo update-alternatives --display java
+sudo update-alternatives --set java /usr/lib/jvm/jdk1.8.0_version/bin/java
+====================================================
+static_files_loading
+{% load static %}
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+{% endblock %}
+{% include 'include/admin_side_bar.html' %}
+{% if clas %}Change{% else %}Add {% endif %}
